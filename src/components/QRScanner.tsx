@@ -37,7 +37,6 @@ const QRScanner = ({ onScan, onClose }: QRScannerProps) => {
                     }
                 }}
                 components={{
-                    audio: false,
                     onOff: true,
                     torch: true,
                 }}
