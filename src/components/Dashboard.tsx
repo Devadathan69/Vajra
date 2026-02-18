@@ -6,7 +6,7 @@ import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import QRScanner from './QRScanner';
 import FoodEntry from './FoodEntry';
-import { Scan, Search, BarChart3, LogOut, Loader2, User, Zap, Hexagon, Terminal } from 'lucide-react';
+import { LogOut, Scan, Hexagon, Terminal, User, Loader2, Search, BarChart3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Dashboard = () => {
