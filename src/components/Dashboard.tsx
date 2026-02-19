@@ -16,7 +16,8 @@ const Dashboard = () => {
     const [manualId, setManualId] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [stats, setStats] = useState({ total: 0, breakfast: 0, lunch: 0, dinner: 0 });
+    const [stats, setStats] = useState({ total: 0, registered: 0, breakfast: 0, lunch: 0, dinner: 0 });
+    const [allMembers, setAllMembers] = useState<any[]>([]);
 
     const navigate = useNavigate();
 
@@ -30,15 +31,27 @@ const Dashboard = () => {
         setLoading(true);
         try {
             const querySnapshot = await getDocs(collection(db, "participants"));
-            let total = 0, b = 0, l = 0, d = 0;
+            let total = 0, reg = 0, b = 0, l = 0, d = 0;
+            const members: any[] = [];
+
             querySnapshot.forEach((doc) => {
                 total++;
                 const data = doc.data();
+                if (data.registered) reg++;
                 if (data.breakfast) b++;
                 if (data.lunch) l++;
                 if (data.dinner) d++;
+                members.push({ id: doc.id, ...data });
             });
-            setStats({ total, breakfast: b, lunch: l, dinner: d });
+
+            // Sort: Registered first
+            members.sort((a, b) => {
+                if (a.registered === b.registered) return 0;
+                return a.registered ? -1 : 1;
+            });
+
+            setStats({ total, registered: reg, breakfast: b, lunch: l, dinner: d });
+            setAllMembers(members);
         } catch (err) {
             console.error(err);
         } finally {
@@ -208,13 +221,38 @@ const Dashboard = () => {
                                     <div className="bg-gradient-to-br from-[#1a1a24] to-[#0d0d12] p-8 rounded-[2rem] border border-white/5 relative overflow-hidden shadow-2xl group">
                                         <div className="absolute inset-0 bg-neon-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                                         <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-bold mb-2 font-orbitron">Total Registration</p>
-                                        <p className="text-6xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] font-orbitron">{loading ? '...' : stats.total}</p>
+                                        <div className="flex items-end gap-3">
+                                            <p className="text-6xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] font-orbitron">{loading ? '...' : stats.registered}</p>
+                                            <p className="text-gray-500 font-mono mb-2">/ {stats.total}</p>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-3">
-                                        <StatCard label="Breakfast" count={stats.breakfast} total={stats.total} color="text-neon-cyan" loading={loading} idx={1} />
-                                        <StatCard label="Lunch" count={stats.lunch} total={stats.total} color="text-neon-purple" loading={loading} idx={2} />
-                                        <StatCard label="Dinner" count={stats.dinner} total={stats.total} color="text-[#ff00ff]" loading={loading} idx={3} />
+                                        <StatCard label="Breakfast" count={stats.breakfast} total={stats.registered} color="text-neon-cyan" loading={loading} idx={1} />
+                                        <StatCard label="Lunch" count={stats.lunch} total={stats.registered} color="text-neon-purple" loading={loading} idx={2} />
+                                        <StatCard label="Dinner" count={stats.dinner} total={stats.registered} color="text-[#ff00ff]" loading={loading} idx={3} />
+                                    </div>
+
+                                    <div className="mt-8 space-y-4">
+                                        <h3 className="text-white font-orbitron text-lg flex items-center gap-2">
+                                            Member Status
+                                            <span className="text-xs bg-white/10 px-2 py-1 rounded-full text-gray-400 font-mono">{allMembers.length}</span>
+                                        </h3>
+                                        <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                            {allMembers.map((member) => (
+                                                <div key={member.id} className="bg-[#13131a]/60 p-4 rounded-xl border border-white/5 flex items-center justify-between hover:bg-[#13131a] transition-colors">
+                                                    <div>
+                                                        <p className="text-white font-bold text-sm">{member.name}</p>
+                                                        <p className="text-[10px] text-gray-500 font-mono">{member.id}</p>
+                                                    </div>
+                                                    {member.registered ? (
+                                                        <span className="text-[10px] font-bold text-green-400 font-mono border border-green-500/20 bg-green-500/10 px-2 py-1 rounded">REGISTERED</span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold text-gray-600 font-mono border border-white/5 bg-white/5 px-2 py-1 rounded">PENDING</span>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             )}

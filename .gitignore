@@ -30,6 +30,12 @@ npm-debug.log*
 
 # Generated test files
 test_qr_*.png
+member qr codes/
+
+# Archives
+*.rar
+*.zip
+*.7z
 
 # Misc
 .gemini/
